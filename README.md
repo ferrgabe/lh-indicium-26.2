@@ -58,10 +58,7 @@ O código python para esta tarefa pode ser executado através da pasta raiz com 
 Este código faz a conexão com o banco de dados, usa parâmetros padronizados e passa uma senha (para o banco que estou usando, é "postgres"). Depois cria o schema do banco com as colunas geradas na etapa anterior (do arquivo schema.sql). Para popular o banco, é realizada uma validação entre cabeçalho do arquivo x cabeçalho da tabela no banco. Caso ocorra algum erro na importação, a linha com erro é ignorada e é gerado um log de erro na pasta error_logs.
 
 #### 3.2 Total de linhas somadas das tabelas: customers, orders, order_items e payments
-Para chegar neste resultado, foi utilizada a query `Q3_soma.sql`, que faz um COUNT de cada tabela e depois soma tudo. O resultado obtido:
-total_linhas_somadas|
---------------------+
-              251864|
+Para chegar neste resultado, foi utilizada a query `Q3_soma.sql`, que faz um COUNT de cada tabela e depois soma tudo. O resultado obtido foi 251864.
 
 ### QUESTÃO 4 - ANÁLISE DE CLIENTES
 Os resultados foram obtidos através da execução das querys:
@@ -78,11 +75,7 @@ Para identificar os top 10 cliente fiéis, foi executada a query `Q4.2_top10_eli
 #### 4.2.1 Como obter as categorias mais vendidas? (mapeamento da cadeia de chaves)
 Para identificar as categorias mais vendidas, a query `Q4.3_consumo_top10.sql` foi executada. Ela conecta cada item com sua categoria, realizando um cruzamento das tabelas/colunas:
 orders.id > order_items.order_id > product_variants.product_variant_id > products.product_id > categories.category_id.
-Em seguida, ao agrupar as linhas por category_id (e categories.name) e agregar SUM(oi.quantity), é possível obter a categoria de produto mais vendida entre os top 10 clientes. 
-
-category_id|nome_categoria|total_itens_comprados|
------------+--------------+---------------------+
-          8|Hélices       |                  492|
+Em seguida, ao agrupar as linhas por category_id (e categories.name) e agregar SUM(oi.quantity), é possível obter a categoria de produto mais vendida entre os top 10 clientes. **O produto mais comprado foi category_id 8 - Hélices, com 492 vendas**
 
 #### 4.2.2 Qual lógica foi utilizada para filtrar os clientes com diversidade mínima?
 Calculei a diversidade de categorias contando o número de categorias únicas compradas por cliente: COUNT(DISTINCT products.category_id). Para filtrar por 13 ou mais categorias distintas, é preciso usar a cláusula HAVING COUNT(DISTINCT p.category_id) >= 13 dentro da agregação por customer_id. O uso de DISTINCT é obrigatório para garantir que compras repetidas de produtos numa mesma categoria não inflacionem a contagem.
@@ -100,18 +93,6 @@ A consulta `Q5_calendario.sql` foi estruturada com subconsultas, vale destacar a
 
 #### 5.1.2 LEFT JOIN entre o calendário e a tabela de vendas agregação de vendas por dia (soma de valor_venda), substituição de valores nulos por zero para dias sem vendas
 Após montar a tabela vendas_diarias_pos agrupando por data, é realizada uma soma do valor total de vendas por dia. Na sequência, a partir de calendario_com_vendas é realizado um LEFT JOIN entre a dim_calendario e a vendas_diarias_pos, usando a data para fazer o relacionamento. O LEFT JOIN garante que todas as datas do calendário sejam mantidas, mesmo Se não houver vendas naquele dia. (executar sem left join puxaria somente dias com vendas). Para finalizar, a clausula COALESCE(v.valor_venda, 0) substitui os NULLs por 0, para garantir que ele será contabilizado em cálculos de média por exemplo.
-
-Resultado da consulta:
-
-dia_semana   |media_vendas_diaria|faturamento_total|quantidade_dias_no_periodo|
--------------+-------------------+-----------------+--------------------------+
-Domingo      |          157616.13|      57529887.95|                       365|
-Segunda-feira|          158241.15|      57758021.43|                       365|
-Terça-feira  |          166118.83|      60633373.26|                       365|
-Quarta-feira |          173605.44|      63539589.22|                       366|
-Quinta-feira |          157154.32|      57518480.61|                       366|
-Sexta-feira  |          170193.68|      62120694.25|                       365|
-Sábado       |          164858.27|      60173268.58|                       365|
 
 #### 5.2.1 - Por que é necessário utilizar uma tabela de datas (calendário) em vez de agrupar diretamente a tabela de vendas?
 A tabela orders só registra eventos de compra. Se a loja abrir em um domingo e não realizar vendas, essa data não gera um registro no banco de dados. Assim, não podemos agrupar diretamente a tabela de vendas porque o SQL contaria só os dias com vendas para calcular a média, o que é inconsistente e impactaria no resultado. O calendário garante que todos os dias passados entrem no cálculo da média.
