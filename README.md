@@ -45,20 +45,32 @@ O valor médio da coluna total é 28704,99.
 Foi realizada inicialmente uma análise via z-score, porém o método foi descartado por ser inadequado pela natureza de distribuição assimétrica dos dados (cauda longa), com a média e o desvio-padrão inflacionados por valores extremos. Desta forma, optei pelo método não-paramétrico de Intervalo Interquartil (IQR), que identificou 5.212 registros (~10% da base) acima de R$ 54.830,00. Contudo, tratam-se de outliers de negócio legítimos (transações de alto valor) e não de erros no dataset. Para preservar a receita total, esses dados devem ser mantidos no dataset.
 Sobre a qualidade dos dados, não foram identificados valores nulos ou inconsistências na base. Desta forma, o dataset está pronto para ingestão e análises posteriores. No entanto, para pipelines de BI e Machine Learning, pode ser necessário realizar uma marcação nas colunas outliers para identificar as transações de alto valor.
 
+---
+
 ### QUESTÃO 2 - SCHEMA
 Para gerar o schema, é necessário fazer a execução do código abaixo:
 1. `python schema_generator.py ../data -o ../sql/schema.sql`
 
 Esse código analisa os arquivos presentes na pasta passada como argumento (data/), e infere os tipos através de algumas técnicas, como expressões regulares, pool de booleans e atribuição para varchar quando não identifica nenhum padrão anterior. Depois, o código cria as instruções para o DDL do CREATE TABLE e gera o arquivo. Conforme as aulas do ciclo preparatório, esses arquivos vão compor a camada bronze, diante disso e da complexidade de código, optei por não incluir atribuição de FKs nesta etapa, embora na modelagem seja possível observar as relações entre tabelas.
 
+---
+
 ### QUESTÃO 3 - PREVISÃO DE DEMANDA
-O código python para esta tarefa pode ser executado através da pasta raiz com o comando:
-1. `python script/data_loader.py data --password postgres`
+O código python para esta tarefa pode ser executado através da pasta raiz:
+1. Abrir o terminal.
+2. Navegar até a pasta raiz do projeto.
+3. Execute o script passando a senha do seu usuário do banco de dados. Os demais parâmetros de conexão (host `localhost`, porta `5432`, database `postgres` e usuário `postgres`) já estão configurados por padrão, mas podem ser alterados via argumentos se necessário: 
+
+```bash
+python script/data_loader.py data --password postgres
+```
 
 Este código faz a conexão com o banco de dados, usa parâmetros padronizados e passa uma senha (para o banco que estou usando, é "postgres"). Depois cria o schema do banco com as colunas geradas na etapa anterior (do arquivo schema.sql). Para popular o banco, é realizada uma validação entre cabeçalho do arquivo x cabeçalho da tabela no banco. Caso ocorra algum erro na importação, a linha com erro é ignorada e é gerado um log de erro na pasta error_logs.
 
 #### 3.2 Total de linhas somadas das tabelas: customers, orders, order_items e payments
 Para chegar neste resultado, foi utilizada a query `Q3_soma.sql`, que faz um COUNT de cada tabela e depois soma tudo. O resultado obtido foi 251864.
+
+---
 
 ### QUESTÃO 4 - ANÁLISE DE CLIENTES
 Os resultados foram obtidos através da execução das querys:
@@ -84,6 +96,8 @@ Calculei a diversidade de categorias contando o número de categorias únicas co
 A seleção dos clientes em ficou isolada em uma subconsulta (top10_elite), já aplicando o desempate (ticket_medio DESC, customer_id ASC) depois, apliquei LIMIT 10, para retornar somente os 10 clientes de maior ticket medio.
 Na consulta final que contabiliza as vendas por categoria, existe um INNER JOIN entre a tabela de pedidos (orders) e essa subconsulta contendo apenas os 10 clientes. Esse INNER JOIN serve para como um "filtro", garantindo que a soma das quantidades (SUM(quantity)) considerasse só os itens de pedidos desse grupo.
 
+---
+
 ### QUESTÃO 5 - DIMENSÃO DE CALENDÁRIO
 Os resultados foram obtidos através da execução da query:
 1. `Q5_calendario.sql` na pasta `sql/`
@@ -100,16 +114,19 @@ A tabela orders só registra eventos de compra. Se a loja abrir em um domingo e 
 #### 5.2.2 - O que aconteceria com a média de vendas se um dia da semana tivesse muitos dias sem nenhuma venda registrada?
 Sem a tabela de dimensão de calendário a média seria maior, porque na conta de divisão, haveriam menos dias no divisor e esses dias de venda zero seriam ignorados no cálculo. Isso pode induzir a decisões erradas, visto que o valor verdadeiro é menor. Com o calendário, os dias sem venda entram na conta valendo 0, puxando a média para baixo e mostrando a performance real daquele dia.
 
+---
+
 ### QUESTÃO 6 - PREVISÃO DE DEMANDA
 
-Como executar o script de previsão de demanda:
-1. Abra o terminal.
-2. Navegue até a pasta `script` do projeto.
+Para executar o script de previsão de demanda:
+1. Abrir o terminal.
+2. Navegar até a pasta `script` do projeto.
 3. Execute o script passando a senha do seu usuário do banco de dados. Os demais parâmetros de conexão (host `localhost`, porta `5432`, database `postgres` e usuário `postgres`) já estão configurados por padrão, mas podem ser alterados via argumentos se necessário:
 
 ```bash
-python previsao_baseline.py --password sua_senha_aqui
+python previsao_baseline.py --password postgres
 ```
+4. Por padrão, o script utilizará a query `Q6_previsao_demanda.sql`
 
 #### 6.3.1 - Como o baseline foi construído?
 
@@ -121,8 +138,7 @@ Para evitar que dados de fora do período desejado interferissem no treinamento,
 #### 6.3.3 - Uma limitação do modelo proposto.
 Umas das limitações desse método é que ele pressupõe que o resultado dos últimos 3 meses serão iguais aos próximos 3 meses. Do ponto de vista de análise de negócio, uma empresa que do ramo de vendas pode ter muita interferência de sazonalidade, como feriados, datas comemorativas e alterações no clima (por exemplo, mais vendas no verão). Um exemplo visível é o previsto x realizado, em 2026-01 a previsão foi de 38.7 vendas do produto, enquanto o real foi de 79, evidenciando o aumento de vendas por conta do verão. Neste cenário fictício, o estoque teria acabado muito antes do previsto, devido a uma má interpretação dos dados.
 
-- [cite_start]🔗 **Script de Previsão:** [`script/previsao_baseline.py`](script/previsao_baseline.py) [cite: 535]
-- [cite_start]🔗 **Consulta de Extração:** [`sql/Q6_previsao_demanda.sql`](sql/Q6_previsao_demanda.sql) [cite: 535]
+---
 
 ### QUESTÃO 7 - SIMILARIDADE DE COSSENO
 
@@ -131,9 +147,9 @@ Durante a validação dos resultados do algoritmo, identifiquei que o produto co
 Conforme discutindo no ciclo preparatório, manter esses dados iria gerar um efeito "Garbage In, Garbage Out". Sendo assim, apliquei um tratamento diretamente na query de extração (Q7_Similaridade_cosseno.sql). Além de remover esses nomes corrompidos, adicionei a regra de negócio WHERE p.is_active = TRUE, para garantir que o motor de recomendação não tente sugerir um produto que já está desativado ou esgotado no catálogo.
 
 Resultado da execução:
-============================================================
+
 RANKING DE RECOMENDAÇÃO: Motor de Popa 1949
-============================================================
+
 1. Motor de Popa 5331 (Similaridade: 0.2566)
 2. Cabo Náutico 2105 (Similaridade: 0.2562)
 3. Vela Mestra 1913 (Similaridade: 0.2558)
