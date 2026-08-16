@@ -136,7 +136,7 @@ Utilizando uma média móvel simples de 3 períodos. A previsão de vendas para 
 Para evitar que dados de fora do período desejado interferissem no treinamento, foi aplicada a função .shift(1) na lógica da média móvel no código. Com isso, previsão projetada para o mês de Janeiro de 2026 não enxerga nenhuma métrica de Janeiro em diante, utilizando somente dados reais dos últimos 3 meses de 2025.
 
 #### 6.3.3 - Uma limitação do modelo proposto.
-Umas das limitações desse método é que ele pressupõe que o resultado dos últimos 3 meses serão iguais aos próximos 3 meses. Do ponto de vista de análise de negócio, uma empresa que do ramo de vendas pode ter muita interferência de sazonalidade, como feriados, datas comemorativas e alterações no clima (por exemplo, mais vendas no verão). Um exemplo visível é o previsto x realizado, em 2026-01 a previsão foi de 38.7 vendas do produto, enquanto o real foi de 79, evidenciando o aumento de vendas por conta do verão. Neste cenário fictício, o estoque teria acabado muito antes do previsto, devido a uma má interpretação dos dados.
+Umas das limitações desse método é que ele pressupõe que o resultado dos últimos 3 meses serão iguais aos próximos 3 meses. Do ponto de vista de análise de negócio, uma empresa que do ramo de vendas pode ter muita interferência de sazonalidade, como feriados, datas comemorativas e alterações no clima (por exemplo, mais vendas no verão). Um exemplo visível é o previsto x realizado, em 2026-01 a previsão foi de 32.7 vendas do produto, enquanto o real foi de 76, evidenciando o aumento de vendas por conta do verão. Neste cenário fictício, o estoque teria acabado muito antes do previsto, devido a uma má interpretação dos dados.
 
 ---
 
