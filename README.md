@@ -1,4 +1,5 @@
 # Desafio Técnico Lighthouse Indicium 26.2 - LH Nauticals
+**Disponível em: https://github.com/ferrgabe/lh-indicium-26.2**
 
 Este repositório contém a resolução do teste técnico prático do Lighthouse 26.2 focado na estruturação, ingestão e modelagem de dados transacionais do e-commerce da LH Nautical.
 
